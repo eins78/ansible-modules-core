@@ -89,6 +89,13 @@ options:
             - If C(yes), any modified files in the working
               repository will be discarded.  Prior to 0.7, this was always
               'yes' and could not be disabled.
+    hardcore:
+        required: false
+        default: "no"
+        choices: [ "yes", "no" ]
+        version_added: "x"
+        description:
+            - If C(yes), will always do a 'git reset --hard'
     depth:
         required: false
         default: null
@@ -656,7 +663,7 @@ def main():
         # else do a pull
         local_mods = has_local_mods(module, git_path, dest, bare)
         before = get_version(module, git_path, dest)
-        if local_mods:
+        if local_mods or hardcore:
             # failure should happen regardless of check mode
             if not force:
                 module.fail_json(msg="Local modifications exist in repository (force=no).")
@@ -675,7 +682,7 @@ def main():
                     repo_updated = False
             else:
                 repo_updated = False
-        if repo_updated is not False:
+        if repo_updated is not False or hardcore is True:
             if module.check_mode:
                 module.exit_json(changed=True, before=before, after=remote_head)
             fetch(git_path, module, repo, dest, version, remote, bare, track_submodules, recursive)
@@ -683,7 +690,7 @@ def main():
 
     # switch to version specified regardless of whether
     # we cloned or pulled
-    if repo_updated and not bare:
+    if repo_updated and not bare or hardcore:
         switch_version(git_path, module, dest, remote, version, recursive, track_submodules)
 
     # Deal with submodules
