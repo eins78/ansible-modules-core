@@ -143,7 +143,7 @@ EXAMPLES = '''
 - apt: deb=/tmp/mypackage.deb
 
 # Install the build dependencies for package "foo"
-- apt: pkg=foo state=build-dep
+- apt: name=foo state=build-dep
 '''
 
 RETURN = '''
